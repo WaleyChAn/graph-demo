@@ -1,0 +1,130 @@
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-size: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+// spacing
+$spaceingType: (
+  // spaceing type variables
+    m: margin,
+  p: padding
+);
+
+$spaceingDirections: (
+  // spaceing direction variables
+    t: top,
+  r: right,
+  b: bottom,
+  l: left
+);
+
+$spaceingSizes: (
+  // spaceing size variables
+    no: 0,
+  xs: 0.5,
+  sm: 1,
+  md: 1.25,
+  lg: 1.5,
+  xl: 2
+);
+
+$spaceingBaseSize: 20px; // spaceing base size
+
+@each $stKey, $stVal in $spaceingType {
+  // eg:  mt-md
+  @each $sdKey, $sdVal in $spaceingDirections {
+    @each $ssKey, $ssVal in $spaceingSizes {
+      .#{$stKey}#{$sdKey}-#{$ssKey} {
+        #{$stVal}-#{$sdVal}: $ssVal * $spaceingBaseSize !important;
+      }
+    }
+  }
+
+  @each $ssKey, $ssVal in $spaceingSizes {
+    // eg: ma-md
+    .#{$stKey}a-#{$ssKey} {
+      #{$stVal}: $ssVal * $spaceingBaseSize !important;
+    }
+
+    // eg: mx-md
+    .#{$stKey}x-#{$ssKey} {
+      #{$stVal}-left: $ssVal * $spaceingBaseSize !important;
+      #{$stVal}-right: $ssVal * $spaceingBaseSize !important;
+    }
+
+    // eg: my-md
+    .#{$stKey}y-#{$ssKey} {
+      #{$stVal}-top: $ssVal * $spaceingBaseSize !important;
+      #{$stVal}-bottom: $ssVal * $spaceingBaseSize !important;
+    }
+  }
+}
+
+// layout-flex
+.layout-flex {
+  display: flex;
+  flex: 1;
+  flex-basis: auto;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  &.row {
+    flex-direction: row;
+  }
+
+  &.column {
+    flex-direction: column;
+  }
+
+  &.align-center {
+    align-items: center;
+  }
+
+  &.justify-center {
+    justify-content: center;
+  }
+
+  & > .layout-flex-s {
+    flex-shrink: 0;
+  }
+
+  & > .layout-flex-l {
+    flex: 1;
+    flex-basis: auto;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    &.scroll-x {
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    &.scroll-y {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    &.scroll {
+      overflow: auto;
+    }
+  }
+}
+
+.demo,
+.chart {
+  width: 100%;
+  height: 100%;
+}
