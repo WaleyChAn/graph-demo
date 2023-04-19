@@ -17,6 +17,11 @@ export default new Router({
           component: () => import('@/views/demo/pages/chart_1')
         },
         {
+          path: '/chart_1_n',
+          name: 'chart_1_n',
+          component: () => import('@/views/demo/pages/chart_1_n')
+        },
+        {
           path: '/chart_2',
           name: 'chart_2',
           component: () => import('@/views/demo/pages/chart_2')

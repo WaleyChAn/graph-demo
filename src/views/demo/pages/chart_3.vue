@@ -20,13 +20,14 @@
 <script>
 import * as echarts from 'echarts'
 import axios from 'axios'
+import { getUuid } from '@/utils/uuid'
 
 export default {
   name: 'Chart',
   data () {
     return {
-      dataUrl: 'static/data/data_1.json',
-      dataLv: 0,
+      dataUrl: 'static/data/data_3.json',
+      data: {},
       activeName: '党群工作部',
       tabsList: [
         {
@@ -63,10 +64,9 @@ export default {
       myChart.showLoading()
 
       const res = await axios.get(this.dataUrl)
-      const data = []
-      if (res) {
-        data.push(res.data || [])
-      }
+      const { data } = res
+      this.data = this.filterData(data)
+
       const formatUtil = echarts.format
       const option = {
         tooltip: {
@@ -87,23 +87,20 @@ export default {
         },
         series: {
           type: 'tree',
-          data: this.filterData(data),
+          data: [this.filterLayer(this.data, 2)],
           roam: true,
           top: '1%',
           left: '7%',
           bottom: '1%',
           right: '20%',
           symbolSize: 7,
-          initialTreeDepth: 2,
+          // initialTreeDepth: 2,
           label: {
             position: 'left',
             verticalAlign: 'middle',
             align: 'right',
             fontSize: 9
           },
-          // lineStyle: {
-          //   width: 1
-          // },
           leaves: {
             label: {
               position: 'right',
@@ -122,28 +119,113 @@ export default {
 
       myChart.setOption(option)
       myChart.hideLoading()
-    },
-    filterData (data) {
-      const result = []
-      this.dataLv++
-      data.forEach(item => {
-        let { name, children } = item
-        name = name.replace('<br>', '\n')
-        const obj = {
-          name: name
+      myChart.on('finished')
+      myChart.on('click', (params) => {
+        const currentData = myChart.getOption().series[0].data[0]
+        const { treeAncestors, data } = params
+        if (treeAncestors && treeAncestors.length > 0) {
+          let newData = { ...currentData }
+          treeAncestors.forEach((item, index) => {
+            if (data.children && data.children.length > 0) {
+              // collapsed
+              newData = this.handleItemCollapsed(newData, item.name, index, treeAncestors.length)
+            } else {
+              // selected
+              newData = this.handleItemSelected(newData, item.name, index, data.selected)
+            }
+          })
+          myChart.setOption({
+            series: {
+              data: [newData]
+            }
+          })
         }
-        if (children && children.length > 0) {
-          obj.children = this.filterData(children)
-          // obj.value = children.length
-        } else {
-          obj.value = 1
-        }
-        result.push(obj)
       })
+    },
+    filterData (data = {}, layer = 0) {
+      const { name = '', children = [] } = data
+
+      const result = {
+        name: name.replace('<br>', ' | '),
+        chartId: `chart-${getUuid()}`,
+        chartLayer: layer,
+        children: children && children.map(item => {
+          return this.filterData(item, layer + 1)
+        })
+      }
       return result
     },
-    handleClick (tab, event) {
-      console.log(tab, event)
+    filterLayer (data = {}, layer) {
+      if (!layer) {
+        return data
+      } else {
+        const { children = [], chartLayer, ...other } = data
+        const result = {
+          ...other,
+          collapsed: chartLayer >= layer,
+          chartLayer,
+          children: children && children.map((item) => {
+            return this.filterLayer(item, layer)
+          })
+        }
+        return result
+      }
+    },
+    handleItemCollapsed (data = {}, itemName, itemIndex, targetLength) {
+      const { children = [], name, chartLayer, ...other } = data
+      const result = {
+        name,
+        chartLayer,
+        ...other,
+        children: children && children.map(item => {
+          return this.handleItemCollapsed(item, itemName, itemIndex, targetLength)
+        })
+      }
+      if (itemIndex === chartLayer + 1) {
+        if (!result.selected) {
+          if (targetLength === itemIndex + 1) {
+            result.collapsed = name !== itemName ? true : !result.collapsed
+          } else {
+            result.collapsed = name !== itemName
+          }
+        }
+      }
+      return result
+    },
+    handleItemSelected (data = {}, itemName, itemIndex, isSelected) {
+      const { children = [], name, chartLayer, ...other } = data
+      const result = {
+        name,
+        chartLayer,
+        ...other,
+        children: children && children.map(item => {
+          return this.handleItemSelected(item, itemName, itemIndex, isSelected)
+        })
+      }
+      if (itemIndex === chartLayer + 1) {
+        if (itemName === name) {
+          if (isSelected) {
+            result.selected = false
+            result.lineStyle = {}
+            result.label = {}
+          } else {
+            result.selected = true
+            result.lineStyle = {
+              color: '#38ab00'
+            }
+            result.label = {
+              color: '#004e9f',
+              fontWeight: 'bold',
+              fontSize: 12,
+              backgroundColor: '#fff'
+            }
+          }
+        }
+      }
+      return result
+    },
+    handleClick (params) {
+      console.log(params)
     }
   }
 }

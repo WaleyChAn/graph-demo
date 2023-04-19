@@ -77,6 +77,7 @@ export default {
           data: this.filterData(data),
           ttop: '18%',
           bottom: '14%',
+          roam: true,
           layout: 'radial',
           symbol: 'emptyCircle',
           symbolSize: 7,
