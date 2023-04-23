@@ -1,46 +1,48 @@
 <template>
   <div class="layout-flex column">
-    <!-- <div class="layout-flex-s pb-xs">
-      <div class="layout-flex align-center justify-center ">
-        <div class="layout-flex-s">
-          <el-radio-group v-model="activeName"
-                          size="small">
-            <el-radio-button v-for="item in tabsList"
-                             :key="item.name"
-                             :label="item.label">
-              {{ item.label }}
-            </el-radio-button>
-          </el-radio-group>
-        </div>
-        <div class="layout-flex-l">
-          <div class="layout-flex align-center"
-               style="justify-content: right;">
-            <span v-for="(item, index) in dataPath"
-                  :key="item.constId"
-                  @click="handleCrumbsClick(item)"
-                  style="cursor: pointer; font-size: 14px;">
-              <i v-if="index > 0"
-                 class="el-icon-arrow-right"></i>
-              {{ item.name }}
-            </span>
-          </div>
-        </div>
-        <div class="layout-flex-s">
-          <div class="layout-flex justfiy-center pl-xs">
-            <i class="el-icon-location-outline"></i>
-          </div>
-        </div>
-      </div>
-    </div> -->
     <div class="layout-flex-l chart-wrapper">
-      <div class="chart-menu"
+      <div class="chart-menu layered"
            :class="{'show': isMenuShow}">
-        <div class="menu-line"></div>
+        <!-- <div class="menu-line"></div> -->
         <div class="menu-content">
-          <el-tree :data="dataMenu"
+          <div v-for="item in dataMenu"
+               :key="`p-${item.chartId}`"
+               class="layered-content layout-flex column">
+            <div class="layered-name layout-flex-s">{{ item.name }}</div>
+            <div class="layered-list layout-flex-l">
+              <div v-for="child in item.children"
+                   :key="child.chartId"
+                   class="layered-item"
+                   :class="{'has-child': child.children && child.children.length > 0, 'active': child.chartId === dataSelected.chartId}"
+                   @click="handleLayerItemClick(child)">
+                <i v-if="child.children && child.children.length > 0"
+                   class="el-icon-arrow-right"></i>
+                {{ child.name }}
+              </div>
+            </div>
+          </div>
+          <template v-for="item in dataMenu">
+            <div v-if="dataSelected.chartId"
+                 :key="`c-${item.chartId}`"
+                 class="layered-menu">
+              <div class="layered-menu-wrapper">
+                <div v-for="child in item.children"
+                     :key="child.chartId"
+                     class="layered-menu-item"
+                     :class="{'show': child.chartId === dataSelected.chartId}">
+                  <el-tree :data="[child]"
+                           :props="defaultProps"
+                           :indent="0"
+                           default-expand-all></el-tree>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- <el-tree :data="dataMenu"
                    :props="defaultProps"
                    :indent="0"
-                   default-expand-all></el-tree>
+                   default-expand-all></el-tree> -->
         </div>
       </div>
       <div class="chart"
@@ -120,14 +122,31 @@ export default {
           data: filterLayer.children,
           nodeClick: false,
           center: ['50%', '50%'],
-          radius: ['10%', '95%'],
+          radius: ['0', '95%'],
           sort: undefined,
           itemStyle: {
             borderWidth: 2
           },
+          label: {
+            fontSize: 14
+          },
           emphasis: {
             focus: 'ancestor'
-          }
+          },
+          levels: [
+            {
+
+            },
+            {
+              radius: [0, '40%'],
+              label: {
+                rotate: 'tangential'
+              }
+            },
+            {
+              radius: ['40%', '95%']
+            }
+          ]
         }
       }
 
@@ -145,26 +164,63 @@ export default {
 
       if (isLeaf) {
         this.dataMenu = []
+        this.dataSelected = {}
         const newData = this.filterLayer(this.data, 2, data)
         this.isMenuShow = this.dataMenu.length > 0
+        let opt = {}
+        if (this.isMenuShow) {
+          opt = {
+            center: ['25%', '50%'],
+            radius: ['0', '70%'],
+            label: {
+              fontSize: 12
+            },
+            levels: [
+              {
+
+              },
+              {
+                radius: [0, '25%'],
+                label: {
+                  rotate: 'tangential'
+                }
+              },
+              {
+                radius: ['25%', '70%']
+              }
+            ]
+          }
+        } else {
+          opt = {
+            center: ['50%', '50%'],
+            radius: ['0', '95%'],
+            label: {
+              fontSize: 14
+            },
+            levels: [
+              {
+
+              },
+              {
+                radius: [0, '40%'],
+                label: {
+                  rotate: 'tangential'
+                }
+              },
+              {
+                radius: ['40%', '95%']
+              }
+            ]
+          }
+        }
         this.myChart.setOption({
           series: {
-            center: this.dataMenu.length > 0 ? ['30%', '50%'] : ['50%', '50%'],
+            ...opt,
             startAngle: startAngle,
             data: newData.children
           }
         })
       }
-
-      // const { chartId } = params.data
-      // const data = this.filterTarget(this.data, chartId)
-      // if (data) {
-      //   const { children, ...other } = data
-      //   if (children && children.length > 0) {
-      //     this.dataPath.push(other)
-      //     this.setChartByTarget(data)
-      //   }
-      // }
     },
     handleCrumbsClick (params) {
       const { chartId } = params
@@ -180,6 +236,13 @@ export default {
             this.setChartByTarget(data)
           }
         }
+      }
+    },
+    handleLayerItemClick (item) {
+      if (item.children && item.children.length > 0) {
+        this.dataSelected = item
+      } else {
+        this.dataSelected = {}
       }
     },
     setChartByTarget (data) {
