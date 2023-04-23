@@ -371,7 +371,7 @@ $spaceingBaseSize: 20px; // spaceing base size
                 background: #b0c4de;
               }
             }
-            &:first-child {
+            &:last-child {
               &::after {
                 display: none;
               }
@@ -393,7 +393,7 @@ $spaceingBaseSize: 20px; // spaceing base size
             }
             &::after {
               position: absolute;
-              top: -11px;
+              top: 15px;
               left: 13px;
               display: block;
               content: "";
