@@ -186,47 +186,47 @@ export default {
         let opt = {}
         if (this.isMenuShow) {
           opt = {
-            center: ['25%', '50%'],
-            radius: ['0', '70%'],
-            label: {
-              fontSize: 10
-            },
-            levels: [
-              {
+            center: ['25%', '50%']
+            // radius: ['0', '70%'],
+            // label: {
+            //   fontSize: 10
+            // },
+            // levels: [
+            //   {
 
-              },
-              {
-                radius: ['5%', '25%'],
-                label: {
-                  rotate: 'tangential'
-                }
-              },
-              {
-                radius: ['25%', '60%']
-              }
-            ]
+            //   },
+            //   {
+            //     radius: ['5%', '25%'],
+            //     label: {
+            //       rotate: 'tangential'
+            //     }
+            //   },
+            //   {
+            //     radius: ['25%', '60%']
+            //   }
+            // ]
           }
         } else {
           opt = {
-            center: ['50%', '50%'],
-            radius: ['0', '80%'],
-            label: {
-              fontSize: 12
-            },
-            levels: [
-              {
+            center: ['50%', '50%']
+            // radius: ['0', '80%'],
+            // label: {
+            //   fontSize: 12
+            // },
+            // levels: [
+            //   {
 
-              },
-              {
-                radius: ['10%', '40%'],
-                label: {
-                  rotate: 'tangential'
-                }
-              },
-              {
-                radius: ['40%', '80%']
-              }
-            ]
+            //   },
+            //   {
+            //     radius: ['10%', '40%'],
+            //     label: {
+            //       rotate: 'tangential'
+            //     }
+            //   },
+            //   {
+            //     radius: ['40%', '80%']
+            //   }
+            // ]
           }
         }
         this.myChart.setOption({

@@ -215,7 +215,7 @@ $spaceingBaseSize: 20px; // spaceing base size
     box-shadow: none;
     background: none;
     &.show {
-      left: calc(25vw + 35vh);
+      left: calc(25vw + 40vh);
     }
     .menu-content {
       position: relative;
@@ -225,17 +225,17 @@ $spaceingBaseSize: 20px; // spaceing base size
       &::after {
         position: absolute;
         top: 50%;
-        left: -40px;
-        margin-top: -20px;
+        left: -30px;
+        margin-top: -15px;
         display: block;
         content: "";
         border-style: solid;
-        border-width: 20px;
+        border-width: 15px;
         border-color: transparent #fff transparent transparent;
       }
       &::before {
         z-index: 1;
-        left: -42px;
+        left: -32px;
         filter: blur(6px);
         opacity: 0.2;
         border-color: transparent #000 transparent transparent;
