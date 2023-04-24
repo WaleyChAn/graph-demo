@@ -215,7 +215,7 @@ $spaceingBaseSize: 20px; // spaceing base size
     box-shadow: none;
     background: none;
     &.show {
-      left: calc(25vw + 40vh);
+      left: calc(25vw + 35vh);
     }
     .menu-content {
       position: relative;
@@ -277,7 +277,7 @@ $spaceingBaseSize: 20px; // spaceing base size
               color: #fff;
               background: #004e9f;
             }
-            & > i {
+            i {
               float: right;
               margin-left: 5px;
               line-height: inherit;
