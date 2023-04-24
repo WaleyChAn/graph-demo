@@ -14,14 +14,30 @@
                    :key="child.chartId"
                    class="layered-item"
                    :class="{'has-child': child.children && child.children.length > 0, 'active': child.chartId === dataSelected.chartId}"
-                   @click="handleLayerItemClick(child)">
-                <i v-if="child.children && child.children.length > 0"
-                   class="el-icon-arrow-right"></i>
-                {{ child.name }}
+                   @mouseenter="handleLayerItemClick(child)">
+                <el-popover ref="popover"
+                            :disabled="!(child.children && child.children.length > 0)"
+                            popper-class="layered-popover"
+                            placement="right"
+                            trigger="hover"
+                            @hide="onPopoverHide(child)">
+                  <div class="chart-menu-tree">
+                    <el-tree v-if="child.children && child.children.length > 0"
+                             :data="[child]"
+                             :props="defaultProps"
+                             :indent="0"
+                             default-expand-all></el-tree>
+                  </div>
+                  <div slot="reference">
+                    <i v-if="child.children && child.children.length > 0"
+                       class="el-icon-arrow-right"></i>
+                    {{ child.name }}
+                  </div>
+                </el-popover>
               </div>
             </div>
           </div>
-          <template v-for="item in dataMenu">
+          <!-- <template v-for="item in dataMenu">
             <div v-if="dataSelected.chartId"
                  :key="`c-${item.chartId}`"
                  class="layered-menu">
@@ -37,7 +53,7 @@
                 </div>
               </div>
             </div>
-          </template>
+          </template> -->
 
           <!-- <el-tree :data="dataMenu"
                    :props="defaultProps"
@@ -122,13 +138,13 @@ export default {
           data: filterLayer.children,
           nodeClick: false,
           center: ['50%', '50%'],
-          radius: ['0', '95%'],
+          radius: ['10%', '80%'],
           sort: undefined,
           itemStyle: {
             borderWidth: 2
           },
           label: {
-            fontSize: 14
+            fontSize: 12
           },
           emphasis: {
             focus: 'ancestor'
@@ -138,13 +154,13 @@ export default {
 
             },
             {
-              radius: [0, '40%'],
+              radius: ['10%', '40%'],
               label: {
                 rotate: 'tangential'
               }
             },
             {
-              radius: ['40%', '95%']
+              radius: ['40%', '80%']
             }
           ]
         }
@@ -173,6 +189,28 @@ export default {
             center: ['25%', '50%'],
             radius: ['0', '70%'],
             label: {
+              fontSize: 10
+            },
+            levels: [
+              {
+
+              },
+              {
+                radius: ['5%', '25%'],
+                label: {
+                  rotate: 'tangential'
+                }
+              },
+              {
+                radius: ['25%', '60%']
+              }
+            ]
+          }
+        } else {
+          opt = {
+            center: ['50%', '50%'],
+            radius: ['0', '80%'],
+            label: {
               fontSize: 12
             },
             levels: [
@@ -180,35 +218,13 @@ export default {
 
               },
               {
-                radius: [0, '25%'],
+                radius: ['10%', '40%'],
                 label: {
                   rotate: 'tangential'
                 }
               },
               {
-                radius: ['25%', '70%']
-              }
-            ]
-          }
-        } else {
-          opt = {
-            center: ['50%', '50%'],
-            radius: ['0', '95%'],
-            label: {
-              fontSize: 14
-            },
-            levels: [
-              {
-
-              },
-              {
-                radius: [0, '40%'],
-                label: {
-                  rotate: 'tangential'
-                }
-              },
-              {
-                radius: ['40%', '95%']
+                radius: ['40%', '80%']
               }
             ]
           }
@@ -242,6 +258,11 @@ export default {
       if (item.children && item.children.length > 0) {
         this.dataSelected = item
       } else {
+        this.dataSelected = {}
+      }
+    },
+    onPopoverHide (item) {
+      if (item.chartId === this.dataSelected.chartId) {
         this.dataSelected = {}
       }
     },
