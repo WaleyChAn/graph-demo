@@ -366,6 +366,54 @@ $spaceingBaseSize: 20px; // spaceing base size
           }
         }
       }
+      .layout-subfield {
+        position: relative;
+        display: flex;
+        .layout-subfield-item {
+          background: #409eff;
+          min-height: 80vh;
+          overflow-y: auto;
+          .layout-subfield-name {
+            position: relative;
+            color: #fff;
+            width: 100px;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ebeef5;
+            cursor: pointer;
+            &.active {
+              background: #91cc75;
+              &::after {
+                position: absolute;
+                top: 50%;
+                right: 0;
+                margin-top: -8px;
+                display: block;
+                border-style: solid;
+                border-width: 8px;
+                border-color: transparent #fff transparent transparent;
+                content: "";
+              }
+            }
+          }
+        }
+        .layout-subfield-menu {
+          position: relative;
+          flex: 1;
+          overflow-y: auto;
+        }
+        .layered-empty {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #999;
+        }
+      }
     }
   }
 }

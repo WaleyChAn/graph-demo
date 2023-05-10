@@ -23,7 +23,89 @@
                :key="`p-${item.chartId}`"
                class="layered-content layout-flex column">
             <div class="layered-name layout-flex-s">{{ item.name }}</div>
-            <div class="layered-list layout-flex-l">
+            <div v-if="item.menuType === 'subfield'"
+                 class="layout-subfield layout-flex-l">
+              <div class="layout-subfield-item">
+                <div v-for="field in item.children"
+                     :key="field.chartId"
+                     class="layout-subfield-name"
+                     :class="{'active': field.chartId === subfieldSelected.chartId}"
+                     @mouseenter="handleSubfieldMouseenter(field)">{{ field.name }}</div>
+              </div>
+              <div v-if="subfieldSelected.chartId"
+                   class="layout-subfield-menu">
+                <template v-for="field in item.children">
+                  <div v-if="field.chartId === subfieldSelected.chartId"
+                       :key="field.chartId"
+                       class="layered-list">
+                    <div v-for="child in field.children"
+                         :key="child.chartId"
+                         class="layered-item"
+                         :class="{'has-child': child.children && child.children.length > 0, 'active': child.chartId === dataSelected.chartId}"
+                         @mouseenter="handleLayerItemClick(child)">
+                      <el-popover ref="popover"
+                                  :disabled="!(child.children && child.children.length > 0)"
+                                  popper-class="layered-popover"
+                                  placement="right"
+                                  trigger="hover"
+                                  @hide="onPopoverHide(child)">
+                        <div class="chart-menu-tree">
+                          <el-tree v-if="child.children && child.children.length > 0"
+                                   :data="[child]"
+                                   :props="defaultProps"
+                                   :indent="0"
+                                   default-expand-all></el-tree>
+                        </div>
+                        <div slot="reference">
+                          <i v-if="child.children && child.children.length > 0"
+                             class="el-icon-arrow-right"></i>
+                          {{ child.name }}
+                        </div>
+                      </el-popover>
+                    </div>
+                    <div v-if="!field.children || field.children.length === 0"
+                         class="layered-empty">
+                      <div class="layered-empty-text">暂无数据</div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              <!-- <div v-for="field in item.children"
+                   :key="field.chartId"
+                   class="layout-subfield-item">
+                <div class="layout-subfield-name">{{ field.name }}</div>
+                <div v-if="field.children && field.children.length > 0"
+                     class="layout-subfield-menu layered-list">
+                  <div v-for="child in field.children"
+                       :key="child.chartId"
+                       class="layered-item"
+                       :class="{'has-child': child.children && child.children.length > 0, 'active': child.chartId === dataSelected.chartId}"
+                       @mouseenter="handleLayerItemClick(child)">
+                    <el-popover ref="popover"
+                                :disabled="!(child.children && child.children.length > 0)"
+                                popper-class="layered-popover"
+                                placement="right"
+                                trigger="hover"
+                                @hide="onPopoverHide(child)">
+                      <div class="chart-menu-tree">
+                        <el-tree v-if="child.children && child.children.length > 0"
+                                 :data="[child]"
+                                 :props="defaultProps"
+                                 :indent="0"
+                                 default-expand-all></el-tree>
+                      </div>
+                      <div slot="reference">
+                        <i v-if="child.children && child.children.length > 0"
+                           class="el-icon-arrow-right"></i>
+                        {{ child.name }}
+                      </div>
+                    </el-popover>
+                  </div>
+                </div>
+              </div> -->
+            </div>
+            <div v-else
+                 class="layered-list layout-flex-l">
               <div v-for="child in item.children"
                    :key="child.chartId"
                    class="layered-item"
@@ -70,7 +152,7 @@ export default {
     return {
       myChart: null,
       chartType: 'sunburst',
-      dataUrl: 'static/data/data_3.json',
+      dataUrl: 'static/data/data_6.json',
       data: {},
       dataCount: [],
       dataMenu: [],
@@ -90,7 +172,8 @@ export default {
           label: '树形图',
           name: 'tree'
         }
-      ]
+      ],
+      subfieldSelected: {}
     }
   },
   watch: {
@@ -126,7 +209,7 @@ export default {
     },
     initSunburst () {
       this.myChart.clear()
-
+      this.isMenuShow = false
       // 从已有数据中加载2层数据
       const filterLayer = this.filterLayerSunburst(this.data, 2)
 
@@ -300,10 +383,12 @@ export default {
       }
     },
     handleTreeClick (params) {
+      const option = this.myChart.getOption()
       const currentData = this.myChart.getOption().series[0].data[0]
       const { treeAncestors, data } = params
       if (treeAncestors && treeAncestors.length > 0) {
         let newData = { ...currentData }
+
         treeAncestors.forEach((item, index) => {
           if (data.children && data.children.length > 0) {
             // collapsed
@@ -313,11 +398,10 @@ export default {
             newData = this.handleItemSelected(newData, item.name, index, data.selected)
           }
         })
-        this.myChart.setOption({
-          series: {
-            data: [newData]
-          }
-        })
+
+        option.series[0].data = [newData]
+        this.myChart.clear()
+        this.myChart.setOption(option)
       }
     },
     handleLayerItemClick (item) {
@@ -326,6 +410,9 @@ export default {
       } else {
         this.dataSelected = {}
       }
+    },
+    handleSubfieldMouseenter (item) {
+      this.subfieldSelected = item
     },
     handleLeafSelected (data = {}, target = {}, layer) {
       if (!layer) {
@@ -419,7 +506,7 @@ export default {
       }
     },
     filterData (data = {}, layer = 0) {
-      const { name = '', children = [], procedureId } = data
+      const { name = '', children = [], procedureId, menuType } = data
       this.dataCount[layer] = this.dataCount[layer] ? this.dataCount[layer] + 1 : 1
       let count = this.dataCount[layer]
       const result = {
@@ -427,19 +514,20 @@ export default {
         chartId: `chart-${getUuid()}`,
         chartLayer: layer,
         layerIndex: count,
+        menuType,
         procedureId,
         children: children && children.map(item => {
           return this.filterData(item, layer + 1)
         })
       }
-      if (children && children.length === 0 && procedureId) {
-        result.value = 1
-        result.label = {
-          position: 'outside',
-          padding: 3,
-          silent: false
-        }
-      }
+      // if (children && children.length === 0 && procedureId) {
+      //   result.value = 1
+      //   result.label = {
+      //     position: 'outside',
+      //     padding: 3,
+      //     silent: false
+      //   }
+      // }
       return result
     },
     filterLayerSunburst (data = {}, layer, target = null) {
@@ -479,6 +567,7 @@ export default {
                   return this.filterLayerSunburst(item, 100)
                 })
               }]
+              this.subfieldSelected = children.find(item => item.children && item.children.length > 0)
             }
           }
         }
